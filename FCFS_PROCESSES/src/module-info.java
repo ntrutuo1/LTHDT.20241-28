@@ -4,5 +4,5 @@
 /**
  * 
  */
-module FCFS_PROCESS {
+module FCFS_PROCESSES {
 }
