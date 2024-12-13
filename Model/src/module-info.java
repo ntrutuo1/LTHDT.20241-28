@@ -4,5 +4,5 @@
 /**
  * 
  */
-module FCFS_PROCESSES {
+module Model {
 }
