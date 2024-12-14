@@ -1,53 +1,94 @@
 package Model;
-import java.util.List;
+
 import java.util.*;
-import java.util.ArrayList;
+
 public class SJNScheduler extends Scheduler {
+    private List<GanttEntry> ganttChart;
+    private boolean isSimulated;
+
+    public SJNScheduler(List<Process> processList) {
+        super(processList);
+        this.ganttChart = new ArrayList<>();
+        this.isSimulated = false;
+    }
+
     @Override
     public void calculateMetrics() {
-        //sap xep tien trinh theo thoi gian den 
-        processList.sort(Comparator.comparingDouble(Process::getArrivalTime));
-        double now = 0; //thoi gian hien tai
-        while (!processList.isEmpty()) {
-            //tim tien trinh ngan nhat de thuc hien
-        	final double finalnow = now;
-            Process shortest = processList.stream()
-                .filter(p -> p.getArrivalTime() <= finalnow) //dung finalnow trong filter
-                .min(Comparator.comparingDouble(Process::getBurstTime))
-                .orElse(null);
-            // thuc hien tien trinh ngan nhat
-            if (shortest != null) {
-                processList.remove(shortest);
-                shortest.setWaitingTime(now - shortest.getArrivalTime()); //thoi gian cho
-                shortest.setTurnaroundTime(shortest.getWaitingTime() + shortest.getBurstTime());//thoi gian quay vong
-                now += shortest.getBurstTime();
-            } else {
-                now++; //khong co tien trinh nao dung thi tang thoi gian len
-            }
+        if (!isSimulated) {
+            runSimulation();
         }
     }
 
     @Override
     public List<GanttEntry> generateGanttChart() {
-        List<GanttEntry> ganttChart = new ArrayList<>();
-        List<Process> sortedProcesses = new ArrayList<>(processList);
-        //sap xep tien trinh theo thoi gian den
-        sortedProcesses.sort(Comparator.comparingDouble(Process::getArrivalTime));
-        double now = 0;
-        while (!sortedProcesses.isEmpty()) {
-            final double finalnow = now;
-            Process shortest = sortedProcesses.stream()
-                .filter(p -> p.getArrivalTime() <= finalnow)
-                .min(Comparator.comparingDouble(Process::getBurstTime))
-                .orElse(null);
-            if (shortest != null) {
-                sortedProcesses.remove(shortest);
-                ganttChart.add(new GanttEntry(shortest.getProcessId(), (int)now, (int)(now + shortest.getBurstTime()))); // Cập nhật bảng gantt (cast sang int nếu cần)
-                now += shortest.getBurstTime();
-            } else {
-                now++;
-            }
+        if (!isSimulated) {
+            runSimulation();
         }
         return ganttChart;
+    }
+
+    private void runSimulation() {
+        // Create a copy of processList to avoid modifying the original list
+        List<Process> processesCopy = new ArrayList<>();
+        for (Process p : processList) {
+            Process newP = new Process(p.getProcessId(), p.getArrivalTime(), p.getBurstTime(), p.getPriority());
+            processesCopy.add(newP);
+        }
+
+        // Sort by arrival time
+        processesCopy.sort(Comparator.comparingDouble(Process::getArrivalTime));
+        double now = 0;
+        List<Process> completed = new ArrayList<>();
+
+        while (!processesCopy.isEmpty()) {
+            final double finalNow = now;
+            List<Process> available = new ArrayList<>();
+            for (Process p : processesCopy) {
+                if (p.getArrivalTime() <= finalNow) {
+                    available.add(p);
+                } else {
+                    break;
+                }
+            }
+
+            if (available.isEmpty()) {
+                now++;
+                continue;
+            }
+
+            Process shortest = available.stream()
+                    .min(Comparator.comparingDouble(Process::getBurstTime))
+                    .orElse(null);
+
+            if (shortest != null) {
+                double start = now;
+                double finish = now + shortest.getBurstTime();
+                now = finish;
+
+                double waitingTime = start - shortest.getArrivalTime();
+                double turnaroundTime = waitingTime + shortest.getBurstTime();
+
+                shortest.setWaitingTime(waitingTime);
+                shortest.setTurnaroundTime(turnaroundTime);
+
+                ganttChart.add(new GanttEntry(shortest.getProcessId(), start, finish));
+
+                processesCopy.remove(shortest);
+                completed.add(shortest);
+            }
+        }
+
+        // Update original processList with metrics
+        for (Process compP : completed) {
+            for (Process originalP : processList) {
+                if (originalP.getProcessId() == compP.getProcessId()) {
+                    originalP.setWaitingTime(compP.getWaitingTime());
+                    originalP.setTurnaroundTime(compP.getTurnaroundTime());
+                    break;
+                }
+            }
+        }
+
+        isSimulated = true;
     }
 }

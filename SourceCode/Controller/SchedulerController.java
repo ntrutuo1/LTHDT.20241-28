@@ -8,8 +8,8 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import javafx.scene.Node;
 
 import Model.Process;
 import Model.Scheduler;
@@ -18,9 +18,7 @@ import Model.SJNScheduler;
 import Model.RRScheduler;
 import Model.GanttEntry;
 import View.SimulationView;
-import View.HelpView;
 import View.MainMenuView;
-import Controller.MainController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,34 +78,24 @@ public class SchedulerController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // Enable/Disable add button depending on input
         Node addButton = dialog.getDialogPane().lookupButton(addButtonType);
         addButton.setDisable(true);
 
-        // Validate inputs
         idField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateInputs(idField, arrivalField, burstField, addButton);
         });
-
         arrivalField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateInputs(idField, arrivalField, burstField, addButton);
         });
-
         burstField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateInputs(idField, arrivalField, burstField, addButton);
         });
 
-        if (algorithm.equals("SJN")) {
-            priorityField.textProperty().addListener((observable, oldValue, newValue) -> {
-                // Priority is optional, so don't affect validation
-            });
-        }
-
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
                 int id = Integer.parseInt(idField.getText());
-                int arrival = Integer.parseInt(arrivalField.getText());
-                int burst = Integer.parseInt(burstField.getText());
+                double arrival = Integer.parseInt(arrivalField.getText());
+                double burst = Integer.parseInt(burstField.getText());
                 int priority = 0;
                 if (algorithm.equals("SJN") && !priorityField.getText().isEmpty()) {
                     priority = Integer.parseInt(priorityField.getText());
@@ -123,16 +111,16 @@ public class SchedulerController {
     }
 
     private void validateInputs(TextField idField, TextField arrivalField, TextField burstField, Node addButton) {
-        boolean disable = !isValidInteger(idField.getText()) ||
-                          !isValidInteger(arrivalField.getText()) ||
-                          !isValidInteger(burstField.getText());
+        boolean disable = !isValidDouble(idField.getText()) ||
+                          !isValidDouble(arrivalField.getText()) ||
+                          !isValidDouble(burstField.getText());
         addButton.setDisable(disable);
     }
 
-    private boolean isValidInteger(String text) {
+    private boolean isValidDouble(String text) {
         if (text == null || text.isEmpty()) return false;
         try {
-            Integer.parseInt(text);
+            Double.parseDouble(text);
             return true;
         } catch (NumberFormatException e) {
             return false;
@@ -150,14 +138,11 @@ public class SchedulerController {
             return;
         }
 
-        // Convert ObservableList to List
         List<Process> processes = new ArrayList<>();
         for (Process p : processList) {
-            // Clone to avoid modifying original
             processes.add(new Process(p.getProcessId(), p.getArrivalTime(), p.getBurstTime(), p.getPriority()));
         }
 
-        // Initialize scheduler
         switch (algorithm) {
             case "FCFS":
                 scheduler = new FCFSScheduler(processes);
@@ -166,8 +151,7 @@ public class SchedulerController {
                 scheduler = new SJNScheduler(processes);
                 break;
             case "RR":
-                // For RR, need to get quantum from user
-                int quantum = getQuantumFromUser();
+                double quantum = getQuantumFromUser();
                 if (quantum <= 0) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Invalid Quantum");
@@ -181,15 +165,12 @@ public class SchedulerController {
                 scheduler = new FCFSScheduler(processes);
         }
 
-        // Calculate metrics and generate Gantt chart
         scheduler.calculateMetrics();
         List<GanttEntry> ganttChart = scheduler.generateGanttChart();
 
-        // Update view
         simulationView.displayProcesses(scheduler.getProcessList());
         simulationView.updateGanttChart(ganttChart);
 
-        // Calculate metrics
         double totalWaiting = 0;
         double totalTurnaround = 0;
         for (Process p : scheduler.getProcessList()) {
@@ -199,9 +180,8 @@ public class SchedulerController {
         double avgWaiting = totalWaiting / scheduler.getProcessList().size();
         double avgTurnaround = totalTurnaround / scheduler.getProcessList().size();
 
-        // CPU Utilization: total burst time / (last end time)
-        int totalBurst = 0;
-        int lastEndTime = 0;
+        double totalBurst = 0;
+        double lastEndTime = 0;
         for (GanttEntry entry : ganttChart) {
             if (entry.getProcessId() != -1) {
                 totalBurst += (entry.getEndTime() - entry.getStartTime());
@@ -215,7 +195,7 @@ public class SchedulerController {
         simulationView.displayMetrics(avgWaiting, avgTurnaround, cpuUtil);
     }
 
-    private int getQuantumFromUser() {
+    private double getQuantumFromUser() {
         TextInputDialog dialog = new TextInputDialog("4");
         dialog.setTitle("Round Robin Quantum");
         dialog.setHeaderText("Enter the time quantum for Round Robin scheduling:");
@@ -226,16 +206,17 @@ public class SchedulerController {
         String input = dialog.getResult();
         if (input == null || input.isEmpty()) return -1;
         try {
-            int quantum = Integer.parseInt(input);
-            return quantum;
+            return Double.parseDouble(input);
         } catch (NumberFormatException e) {
             return -1;
         }
     }
 
     private void goBackToMenu() {
+        var defaultProcessList = Scheduler.createDefaultProcessList();
+
         MainMenuView mainMenuView = new MainMenuView();
-        MainController mainController = new MainController(mainMenuView, primaryStage);
+        new MainController(mainMenuView, primaryStage, defaultProcessList);
         Scene menuScene = new Scene(mainMenuView.getRoot(), 800, 600);
         primaryStage.setScene(menuScene);
     }

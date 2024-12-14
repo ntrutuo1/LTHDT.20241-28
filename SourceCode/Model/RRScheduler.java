@@ -2,56 +2,103 @@ package Model;
 import java.util.*;
 
 public class RRScheduler extends Scheduler {
-    private double quantum; // Định nghĩa quantum cho thuật toán Round Robin là double
+    private double quantum;
+    private List<GanttEntry> ganttChart;
+    private boolean isSimulated;
 
-    // Constructor khởi tạo với quantum
-    public RRScheduler(double quantum) {
+    public RRScheduler(List<Process> processList, double quantum) {
+        super(processList);
         this.quantum = quantum;
+        this.ganttChart = new ArrayList<>();
+        this.isSimulated = false;
     }
 
     @Override
     public void calculateMetrics() {
-        Queue<Process> readyQueue = new LinkedList<>(processList); // Tạo hàng đợi tiến trình
-        double currentTime = 0; // Thời gian hiện tại ban đầu là 0
-        while (!readyQueue.isEmpty()) {
-            Process process = readyQueue.poll(); // Lấy tiến trình đầu tiên từ hàng đợi
-            if (process.getArrivalTime() > currentTime) {
-                currentTime = process.getArrivalTime(); // Cập nhật nếu tiến trình đến sau thời gian hiện tại
-            }
-
-            double timeSlice = Math.min(quantum, process.getRemainingTime()); // Tính slice thời gian nhỏ nhất giữa quantum và thời gian còn lại
-            process.setRemainingTime(process.getRemainingTime() - timeSlice); // Cập nhật thời gian còn lại của tiến trình
-            currentTime += timeSlice; // Cập nhật thời gian hiện tại
-
-            if (process.getRemainingTime() > 0) {
-                readyQueue.add(process); // Nếu tiến trình chưa hoàn thành, thêm lại vào hàng đợi
-            } else {
-                process.setWaitingTime(currentTime - process.getArrivalTime() - process.getBurstTime());
-                process.setTurnaroundTime(process.getWaitingTime() + process.getBurstTime());
-            }
+        if (!isSimulated) {
+            runSimulation();
         }
     }
 
     @Override
     public List<GanttEntry> generateGanttChart() {
-        List<GanttEntry> ganttChart = new ArrayList<>();
-        Queue<Process> readyQueue = new LinkedList<>(processList); // Tạo hàng đợi tiến trình
-        double currentTime = 0; // Thời gian hiện tại ban đầu là 0
+        if (!isSimulated) {
+            runSimulation();
+        }
+        return ganttChart;
+    }
 
-        while (!readyQueue.isEmpty()) {
-            Process process = readyQueue.poll(); // Lấy tiến trình đầu tiên từ hàng đợi
-            if (process.getArrivalTime() > currentTime) {
-                currentTime = process.getArrivalTime(); // Cập nhật nếu tiến trình đến sau thời gian hiện tại
+    private void runSimulation() {
+        List<Process> processesCopy = new ArrayList<>();
+        for (Process p : processList) {
+            Process newP = new Process(p.getProcessId(), p.getArrivalTime(), p.getBurstTime(), p.getPriority());
+            processesCopy.add(newP);
+        }
+
+        processesCopy.sort(Comparator.comparingDouble(Process::getArrivalTime));
+
+        Queue<Process> readyQueue = new LinkedList<>();
+        double currentTime = 0;
+        int index = 0;
+        List<Process> completed = new ArrayList<>();
+
+        while (true) {
+            while (index < processesCopy.size() && processesCopy.get(index).getArrivalTime() <= currentTime) {
+                readyQueue.add(processesCopy.get(index));
+                index++;
             }
 
-            double timeSlice = Math.min(quantum, process.getRemainingTime()); // Tính slice thời gian nhỏ nhất
-            ganttChart.add(new GanttEntry(process.getProcessId(), currentTime, currentTime + timeSlice)); // Thêm vào gantt chart
-            process.setRemainingTime(process.getRemainingTime() - timeSlice); // Cập nhật thời gian còn lại
-            currentTime += timeSlice; // Cập nhật thời gian hiện tại
+            if (readyQueue.isEmpty()) {
+                if (index < processesCopy.size()) {
+                    currentTime = processesCopy.get(index).getArrivalTime();
+                    continue;
+                } else {
+                    break;
+                }
+            }
+
+            Process process = readyQueue.poll();
+            double timeSlice = Math.min(quantum, process.getRemainingTime());
+
+            ganttChart.add(new GanttEntry(process.getProcessId(), currentTime, currentTime + timeSlice));
+            currentTime += timeSlice;
+            process.setRemainingTime(process.getRemainingTime() - timeSlice);
+
+            while (index < processesCopy.size() && processesCopy.get(index).getArrivalTime() <= currentTime) {
+                readyQueue.add(processesCopy.get(index));
+                index++;
+            }
+
             if (process.getRemainingTime() > 0) {
-                readyQueue.add(process); // Nếu tiến trình chưa hoàn thành, thêm lại vào hàng đợi
+                readyQueue.add(process);
+            } else {
+                double finishTime = currentTime;
+                double arrival = process.getArrivalTime();
+                double burst = process.getBurstTime();
+                double waitingTime = finishTime - arrival - burst;
+                double turnaroundTime = waitingTime + burst;
+
+                process.setWaitingTime(waitingTime);
+                process.setTurnaroundTime(turnaroundTime);
+                completed.add(process);
+            }
+
+            if (index >= processesCopy.size() && readyQueue.isEmpty()) {
+                break;
             }
         }
-        return ganttChart; // Trả về bảng gantt
+
+        // Cập nhật dữ liệu vào processList gốc
+        for (Process compP : completed) {
+            for (Process originalP : processList) {
+                if (originalP.getProcessId() == compP.getProcessId()) {
+                    originalP.setWaitingTime(compP.getWaitingTime());
+                    originalP.setTurnaroundTime(compP.getTurnaroundTime());
+                    break;
+                }
+            }
+        }
+
+        isSimulated = true;
     }
 }

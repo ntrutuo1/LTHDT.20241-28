@@ -1,14 +1,20 @@
+package App;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import View.MainMenuView;
 import Controller.MainController;
+import View.MainMenuView;
+import Model.Scheduler;
 
 public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
+        // Use the default process list
+        var defaultProcessList = Scheduler.createDefaultProcessList();
+
         MainMenuView mainMenuView = new MainMenuView();
-        MainController mainController = new MainController(mainMenuView, primaryStage);
+        new MainController(mainMenuView, primaryStage, defaultProcessList);
 
         Scene scene = new Scene(mainMenuView.getRoot(), 800, 600);
         primaryStage.setTitle("CPU Scheduling Simulator");
