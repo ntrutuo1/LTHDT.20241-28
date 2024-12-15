@@ -13,12 +13,11 @@ import Model.Process;
 import java.util.List;
 
 public class MainController {
-    private MainMenuView menuView;
     private Stage primaryStage;
     private List<Process> defaultProcessList;
 
-    public MainController(MainMenuView menuView, Stage primaryStage, List<Process> defaultProcessList) {
-        this.menuView = menuView;
+    @SuppressWarnings("exports")
+	public MainController(MainMenuView menuView, Stage primaryStage, List<Process> defaultProcessList) {
         this.primaryStage = primaryStage;
         this.defaultProcessList = defaultProcessList;
 

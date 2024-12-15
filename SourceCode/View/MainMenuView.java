@@ -34,27 +34,33 @@ public class MainMenuView {
         root.setCenter(centerBox);
     }
 
-    public BorderPane getRoot() {
+    @SuppressWarnings("exports")
+	public BorderPane getRoot() {
         return root;
     }
 
-    public Button getFCFSButton() {
+    @SuppressWarnings("exports")
+	public Button getFCFSButton() {
         return fcfsButton;
     }
 
-    public Button getSJNButton() {
+    @SuppressWarnings("exports")
+	public Button getSJNButton() {
         return sjnButton;
     }
 
-    public Button getRRButton() {
+    @SuppressWarnings("exports")
+	public Button getRRButton() {
         return rrButton;
     }
 
-    public Button getHelpButton() {
+    @SuppressWarnings("exports")
+	public Button getHelpButton() {
         return helpButton;
     }
 
-    public Button getExitButton() {
+    @SuppressWarnings("exports")
+	public Button getExitButton() {
         return exitButton;
     }
 }

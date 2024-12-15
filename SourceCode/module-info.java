@@ -4,7 +4,7 @@
 /**
  * 
  */
-module LTHDT{
+module SchedulerSimulation {
     requires javafx.graphics;
 	requires javafx.controls;
 	

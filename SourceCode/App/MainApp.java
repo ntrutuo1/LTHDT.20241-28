@@ -8,7 +8,8 @@ import View.MainMenuView;
 import Model.Scheduler;
 
 public class MainApp extends Application {
-    @Override
+    @SuppressWarnings("exports")
+	@Override
     public void start(Stage primaryStage) {
         // Use the default process list
         var defaultProcessList = Scheduler.createDefaultProcessList();

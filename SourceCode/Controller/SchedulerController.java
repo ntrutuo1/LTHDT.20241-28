@@ -4,11 +4,8 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.scene.layout.VBox;
 import javafx.scene.Node;
 
 import Model.Process;
@@ -29,7 +26,8 @@ public class SchedulerController {
     private String algorithm;
     private Stage primaryStage;
 
-    public SchedulerController(SimulationView simulationView, String algorithm, Stage primaryStage) {
+    @SuppressWarnings("exports")
+	public SchedulerController(SimulationView simulationView, String algorithm, Stage primaryStage) {
         this.simulationView = simulationView;
         this.algorithm = algorithm;
         this.primaryStage = primaryStage;

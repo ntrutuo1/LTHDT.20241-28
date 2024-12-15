@@ -23,10 +23,11 @@ public class SimulationView {
     private Button runSimulationButton;
     private Button backButton;
 
-    private HBox ganttChartBox;
+    private FlowPane ganttChartPane; // Changed from HBox to FlowPane
     private Label metricsLabel;
 
-    public SimulationView(List<Process> processList, String algorithm) {
+    @SuppressWarnings("unchecked")
+	public SimulationView(List<Process> processList, String algorithm) {
         root = new BorderPane();
 
         // Top: Title
@@ -70,13 +71,18 @@ public class SimulationView {
 
         root.setLeft(leftBox);
 
-        // Center: Gantt Chart
-        ganttChartBox = new HBox(5);
-        ScrollPane ganttScroll = new ScrollPane(ganttChartBox);
+        // Center: Gantt Chart using FlowPane
+        ganttChartPane = new FlowPane();
+        ganttChartPane.setHgap(5);
+        ganttChartPane.setVgap(5);
+        ganttChartPane.setPadding(new Insets(10));
+        ganttChartPane.setStyle("-fx-border-color: black; -fx-background-color: white;");
+        ganttChartPane.setPrefWidth(400); // Adjust width as needed
+
+        ScrollPane ganttScroll = new ScrollPane(ganttChartPane);
+        ganttScroll.setFitToWidth(true);
         ganttScroll.setFitToHeight(true);
         ganttScroll.setPrefHeight(200);
-        ganttChartBox.setPadding(new Insets(10));
-        ganttChartBox.setStyle("-fx-border-color: black; -fx-background-color: white;");
 
         root.setCenter(ganttScroll);
 
@@ -87,7 +93,8 @@ public class SimulationView {
         root.setBottom(metricsLabel);
     }
 
-    public BorderPane getRoot() {
+    @SuppressWarnings("exports")
+	public BorderPane getRoot() {
         return root;
     }
 
@@ -99,23 +106,28 @@ public class SimulationView {
         return processTable;
     }
 
-    public Button getAddProcessButton() {
+    @SuppressWarnings("exports")
+	public Button getAddProcessButton() {
         return addProcessButton;
     }
 
-    public Button getRunSimulationButton() {
+    @SuppressWarnings("exports")
+	public Button getRunSimulationButton() {
         return runSimulationButton;
     }
 
-    public Button getBackButton() {
+    @SuppressWarnings("exports")
+	public Button getBackButton() {
         return backButton;
     }
 
-    public HBox getGanttChartBox() {
-        return ganttChartBox;
+    @SuppressWarnings("exports")
+	public FlowPane getGanttChartPane() {
+        return ganttChartPane;
     }
 
-    public Label getMetricsLabel() {
+    @SuppressWarnings("exports")
+	public Label getMetricsLabel() {
         return metricsLabel;
     }
 
@@ -125,7 +137,7 @@ public class SimulationView {
     }
 
     public void updateGanttChart(List<GanttEntry> ganttEntries) {
-        ganttChartBox.getChildren().clear();
+        ganttChartPane.getChildren().clear();
         for (GanttEntry entry : ganttEntries) {
             Label lbl;
             if (entry.getProcessId() == -1) {
@@ -136,7 +148,9 @@ public class SimulationView {
                 lbl = new Label("P" + entry.getProcessId());
                 lbl.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightblue;");
             }
-            ganttChartBox.getChildren().add(lbl);
+            lbl.setMinWidth(50); // Adjust as needed for better spacing
+            lbl.setAlignment(Pos.CENTER);
+            ganttChartPane.getChildren().add(lbl);
         }
     }
 
