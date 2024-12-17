@@ -14,34 +14,46 @@ import javafx.scene.text.TextAlignment;
 import Model.Process;
 import Model.GanttEntry;
 
+/**
+ * Lớp SimulationView tạo giao diện cho mô phỏng các thuật toán lập lịch CPU.
+ * Giao diện bao gồm bảng tiến trình, biểu đồ Gantt và khu vực hiển thị các chỉ số.
+ */
 public class SimulationView {
-    private BorderPane root;
-    private TableView<Process> processTable;
-    private ObservableList<Process> processData;
+    private BorderPane root;                   // Layout chính sử dụng BorderPane.
+    private TableView<Process> processTable;   // Bảng hiển thị danh sách tiến trình.
+    private ObservableList<Process> processData; // Dữ liệu cho bảng tiến trình.
 
-    private Button addProcessButton;
-    private Button runSimulationButton;
-    private Button backButton;
+    private Button addProcessButton;           // Nút để thêm tiến trình mới.
+    private Button runSimulationButton;        // Nút để chạy mô phỏng.
+    private Button backButton;                 // Nút quay lại menu chính.
 
-    private FlowPane ganttChartPane; // Changed from HBox to FlowPane
-    private Label metricsLabel;
+    private FlowPane ganttChartPane;           // Biểu đồ Gantt sử dụng FlowPane.
+    private Label metricsLabel;                // Nhãn hiển thị các chỉ số (thời gian chờ, turnaround, CPU sử dụng).
 
+    /**
+     * Constructor khởi tạo giao diện mô phỏng.
+     * Thiết lập bố cục, bảng tiến trình, biểu đồ Gantt và các chỉ số.
+     *
+     * @param processList Danh sách tiến trình ban đầu.
+     * @param algorithm   Tên của thuật toán lập lịch đang được mô phỏng.
+     */
     @SuppressWarnings("unchecked")
-	public SimulationView(List<Process> processList, String algorithm) {
-        root = new BorderPane();
+    public SimulationView(List<Process> processList, String algorithm) {
+        root = new BorderPane(); // Sử dụng BorderPane làm layout chính.
 
-        // Top: Title
+        // ======= Phần Tiêu Đề (Top) =======
         Label title = new Label("Simulation - " + algorithm + " Scheduler");
-        title.setFont(Font.font(24));
-        title.setPadding(new Insets(10));
-        title.setTextAlignment(TextAlignment.CENTER);
-        root.setTop(title);
-        BorderPane.setAlignment(title, Pos.CENTER);
+        title.setFont(Font.font(24));               // Cỡ chữ tiêu đề.
+        title.setPadding(new Insets(10));           // Khoảng cách xung quanh tiêu đề.
+        title.setTextAlignment(TextAlignment.CENTER); // Căn giữa văn bản.
+        root.setTop(title);                         // Đặt tiêu đề ở phần Top.
+        BorderPane.setAlignment(title, Pos.CENTER); // Canh giữa tiêu đề.
 
-        // Left: Process Table
-        processTable = new TableView<>();
+        // ======= Phần Bảng Tiến Trình (Left) =======
+        processTable = new TableView<>();                // Tạo bảng để hiển thị tiến trình.
         processData = FXCollections.observableArrayList(processList);
 
+        // Tạo các cột cho bảng.
         TableColumn<Process, Integer> idCol = new TableColumn<>("Process ID");
         idCol.setCellValueFactory(new PropertyValueFactory<>("processId"));
 
@@ -54,47 +66,52 @@ public class SimulationView {
         TableColumn<Process, Number> priorityCol = new TableColumn<>("Priority");
         priorityCol.setCellValueFactory(new PropertyValueFactory<>("priority"));
 
-        processTable.getColumns().addAll(idCol, arrivalCol, burstCol, priorityCol);
-        processTable.setItems(processData);
-        processTable.setPrefWidth(400);
+        processTable.getColumns().addAll(idCol, arrivalCol, burstCol, priorityCol); // Thêm cột vào bảng.
+        processTable.setItems(processData);               // Gán dữ liệu cho bảng.
+        processTable.setPrefWidth(400);                  // Đặt chiều rộng cho bảng.
 
+        // Tạo các nút điều khiển bên dưới bảng.
         addProcessButton = new Button("Add Process");
         runSimulationButton = new Button("Run Simulation");
         backButton = new Button("Back to Menu");
 
         HBox buttonBox = new HBox(10, addProcessButton, runSimulationButton, backButton);
-        buttonBox.setPadding(new Insets(10));
-        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(10));       // Khoảng cách xung quanh HBox.
+        buttonBox.setAlignment(Pos.CENTER);         // Canh giữa các nút.
 
-        VBox leftBox = new VBox(10, processTable, buttonBox);
-        leftBox.setPadding(new Insets(10));
+        VBox leftBox = new VBox(10, processTable, buttonBox); // Gộp bảng và nút vào VBox.
+        leftBox.setPadding(new Insets(10));         // Khoảng cách xung quanh VBox.
+        root.setLeft(leftBox);                      // Đặt vào phần Left của BorderPane.
 
-        root.setLeft(leftBox);
-
-        // Center: Gantt Chart using FlowPane
-        ganttChartPane = new FlowPane();
-        ganttChartPane.setHgap(5);
-        ganttChartPane.setVgap(5);
-        ganttChartPane.setPadding(new Insets(10));
+        // ======= Phần Biểu Đồ Gantt (Center) =======
+        ganttChartPane = new FlowPane();            // Tạo FlowPane để biểu diễn Gantt Chart.
+        ganttChartPane.setHgap(5);                  // Khoảng cách ngang giữa các thành phần.
+        ganttChartPane.setVgap(5);                  // Khoảng cách dọc giữa các thành phần.
+        ganttChartPane.setPadding(new Insets(10));  // Khoảng cách xung quanh FlowPane.
         ganttChartPane.setStyle("-fx-border-color: black; -fx-background-color: white;");
-        ganttChartPane.setPrefWidth(400); // Adjust width as needed
+        ganttChartPane.setPrefWidth(400);           // Đặt chiều rộng cho biểu đồ.
 
-        ScrollPane ganttScroll = new ScrollPane(ganttChartPane);
+        ScrollPane ganttScroll = new ScrollPane(ganttChartPane); // Cho phép cuộn biểu đồ Gantt.
         ganttScroll.setFitToWidth(true);
         ganttScroll.setFitToHeight(true);
         ganttScroll.setPrefHeight(200);
 
-        root.setCenter(ganttScroll);
+        root.setCenter(ganttScroll);                // Đặt biểu đồ Gantt ở phần Center.
 
-        // Bottom: Metrics
-        metricsLabel = new Label("Metrics will be displayed here.");
-        metricsLabel.setFont(Font.font(14));
-        metricsLabel.setPadding(new Insets(10));
-        root.setBottom(metricsLabel);
+        // ======= Phần Chỉ Số (Bottom) =======
+        metricsLabel = new Label("Metrics will be displayed here."); // Nhãn hiển thị các chỉ số.
+        metricsLabel.setFont(Font.font(14));        // Đặt cỡ chữ cho nhãn.
+        metricsLabel.setPadding(new Insets(10));    // Khoảng cách xung quanh nhãn.
+        root.setBottom(metricsLabel);               // Đặt nhãn ở phần Bottom.
     }
 
+    /**
+     * Trả về layout gốc của giao diện mô phỏng.
+     *
+     * @return BorderPane chứa toàn bộ giao diện.
+     */
     @SuppressWarnings("exports")
-	public BorderPane getRoot() {
+    public BorderPane getRoot() {
         return root;
     }
 
@@ -107,53 +124,69 @@ public class SimulationView {
     }
 
     @SuppressWarnings("exports")
-	public Button getAddProcessButton() {
+    public Button getAddProcessButton() {
         return addProcessButton;
     }
 
     @SuppressWarnings("exports")
-	public Button getRunSimulationButton() {
+    public Button getRunSimulationButton() {
         return runSimulationButton;
     }
 
     @SuppressWarnings("exports")
-	public Button getBackButton() {
+    public Button getBackButton() {
         return backButton;
     }
 
     @SuppressWarnings("exports")
-	public FlowPane getGanttChartPane() {
+    public FlowPane getGanttChartPane() {
         return ganttChartPane;
     }
 
     @SuppressWarnings("exports")
-	public Label getMetricsLabel() {
+    public Label getMetricsLabel() {
         return metricsLabel;
     }
 
+    /**
+     * Hiển thị danh sách tiến trình trong bảng.
+     *
+     * @param processes Danh sách tiến trình.
+     */
     public void displayProcesses(List<Process> processes) {
         processData.clear();
         processData.addAll(processes);
     }
 
+    /**
+     * Cập nhật biểu đồ Gantt dựa trên danh sách GanttEntry.
+     *
+     * @param ganttEntries Danh sách GanttEntry.
+     */
     public void updateGanttChart(List<GanttEntry> ganttEntries) {
         ganttChartPane.getChildren().clear();
         for (GanttEntry entry : ganttEntries) {
             Label lbl;
-            if (entry.getProcessId() == -1) {
-                // Idle time
+            if (entry.getProcessId() == -1) { // Thời gian rỗi.
                 lbl = new Label("Idle");
                 lbl.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightgray;");
             } else {
                 lbl = new Label("P" + entry.getProcessId());
                 lbl.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightblue;");
             }
-            lbl.setMinWidth(50); // Adjust as needed for better spacing
+            lbl.setMinWidth(50);
             lbl.setAlignment(Pos.CENTER);
             ganttChartPane.getChildren().add(lbl);
         }
     }
 
+    /**
+     * Hiển thị các chỉ số như thời gian chờ trung bình, thời gian hoàn thành trung bình và CPU sử dụng.
+     *
+     * @param avgWait Thời gian chờ trung bình.
+     * @param avgTurn Thời gian hoàn thành trung bình.
+     * @param cpuUtil Hiệu suất sử dụng CPU.
+     */
     public void displayMetrics(double avgWait, double avgTurn, double cpuUtil) {
         metricsLabel.setText(String.format(
             "Average Waiting Time: %.2f\nAverage Turnaround Time: %.2f\nCPU Utilization: %.2f%%",
