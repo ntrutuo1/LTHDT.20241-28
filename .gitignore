@@ -1,5 +1,30 @@
+# Compiled class files
 *.class
-bin 
-.settings
+
+# Log files
+*.log
+
+# Binary files
+bin/
+
+# IDE project files
+.settings/
 .classpath
 .project
+
+# Maven/Gradle build directories
+target/
+build/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore generated files
+*.iml
+*.ipr
+*.iws
