@@ -158,6 +158,7 @@ public class SimulationView {
         processData.addAll(processes);
     }
 
+    
     /**
  * Cập nhật biểu đồ Gantt để hiển thị thông tin chi tiết về các tiến trình hoặc thời gian rỗi.
  * 
