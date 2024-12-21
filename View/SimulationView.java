@@ -159,26 +159,53 @@ public class SimulationView {
     }
 
     /**
-     * Cập nhật biểu đồ Gantt dựa trên danh sách GanttEntry.
-     *
-     * @param ganttEntries Danh sách GanttEntry.
-     */
-    public void updateGanttChart(List<GanttEntry> ganttEntries) {
-        ganttChartPane.getChildren().clear();
-        for (GanttEntry entry : ganttEntries) {
-            Label lbl;
-            if (entry.getProcessId() == -1) { // Thời gian rỗi.
-                lbl = new Label("Idle");
-                lbl.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightgray;");
-            } else {
-                lbl = new Label("P" + entry.getProcessId());
-                lbl.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightblue;");
-            }
-            lbl.setMinWidth(50);
-            lbl.setAlignment(Pos.CENTER);
-            ganttChartPane.getChildren().add(lbl);
+ * Cập nhật biểu đồ Gantt để hiển thị thông tin chi tiết về các tiến trình hoặc thời gian rỗi.
+ * 
+ * - Đối với thời gian rỗi (Idle): Hiển thị thời gian bắt đầu và kết thúc.
+ * - Đối với tiến trình (Active Process): Hiển thị ID tiến trình, thời gian đến (AT), thời gian chờ (WT), 
+ *   và thời gian kết thúc (ET).
+ *
+ * @param ganttEntries Danh sách GanttEntry chứa thông tin về các khoảng thời gian thực thi tiến trình.
+ */
+public void updateGanttChart(List<GanttEntry> ganttEntries) {
+    // Xóa toàn bộ nội dung cũ trên biểu đồ Gantt
+    ganttChartPane.getChildren().clear();
+
+    // Lặp qua danh sách GanttEntry để cập nhật thông tin cho từng mục
+    for (GanttEntry entry : ganttEntries) {
+        Label ganttLabel; // Nhãn dùng để hiển thị thông tin của mỗi mục trong biểu đồ
+
+        // Trường hợp: Thời gian rỗi (Idle)
+        if (entry.getProcessId() == -1) { // Nếu processId là -1, nghĩa là không có tiến trình nào thực thi
+            ganttLabel = new Label( // Tạo nhãn hiển thị thông tin thời gian rỗi
+                "Idle\n" +                              // Hiển thị chữ "Idle" để biểu thị khoảng thời gian rỗi
+                "Start: " + entry.getStartTime() + "\n" + // Thời gian bắt đầu của khoảng rỗi
+                "End: " + entry.getEndTime()             // Thời gian kết thúc của khoảng rỗi
+            );
+            // Thiết lập kiểu hiển thị nhãn cho thời gian rỗi (màu nền xám nhạt)
+            ganttLabel.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightgray;");
+        } 
+        // Trường hợp: Tiến trình đang thực thi (Active Process)
+        else {
+            ganttLabel = new Label( // Tạo nhãn hiển thị thông tin tiến trình
+                "P" + entry.getProcessId() + "\n" +       // Hiển thị ID của tiến trình (ví dụ: P1, P2)
+                "AT: " + entry.getStartTime() + "\n" +    // Hiển thị thời gian đến (AT - Arrival Time)
+                "WT: " + entry.getWaitingTime() + "\n" +  // Hiển thị thời gian chờ (WT - Waiting Time)
+                "ET: " + entry.getEndTime()              // Hiển thị thời gian kết thúc (ET - End Time)
+            );
+            // Thiết lập kiểu hiển thị nhãn cho tiến trình (màu nền xanh nhạt)
+            ganttLabel.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightblue;");
         }
+
+        // Điều chỉnh kích thước nhãn để đảm bảo hiển thị rõ ràng
+        ganttLabel.setMinWidth(100); // Đặt chiều rộng tối thiểu cho nhãn là 100 pixel
+        ganttLabel.setAlignment(Pos.CENTER); // Căn giữa nội dung hiển thị trong nhãn
+
+        // Thêm nhãn vào FlowPane của biểu đồ Gantt
+        ganttChartPane.getChildren().add(ganttLabel);
     }
+}
+
 
     /**
      * Hiển thị các chỉ số như thời gian chờ trung bình, thời gian hoàn thành trung bình và CPU sử dụng.
