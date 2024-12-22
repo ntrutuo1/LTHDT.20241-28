@@ -5,7 +5,7 @@ package Model;
  * Mỗi mục bao gồm ID của tiến trình, thời gian bắt đầu, thời gian kết thúc, và thời gian chờ.
  */
 public class GanttEntry {
-    private int processId;    // ID của tiến trình.
+    private double processId;    // ID của tiến trình.
     private double startTime; // Thời gian bắt đầu thực thi tiến trình.
     private double endTime;   // Thời gian kết thúc thực thi tiến trình.
     private double waitingTime; // Thời gian chờ trước khi tiến trình bắt đầu thực thi.
@@ -24,7 +24,7 @@ public class GanttEntry {
      * @param endTime     Thời gian kết thúc thực thi tiến trình.
      * @param waitingTime Thời gian chờ trước khi tiến trình bắt đầu thực thi.
      */
-    public GanttEntry(int processId, double startTime, double endTime, double waitingTime) {
+    public GanttEntry(double processId, double startTime, double endTime, double waitingTime) {
         this.processId = processId;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -36,7 +36,7 @@ public class GanttEntry {
      *
      * @return ID của tiến trình.
      */
-    public int getProcessId() {
+    public double getProcessId() {
         return processId;
     }
 
@@ -45,7 +45,7 @@ public class GanttEntry {
      *
      * @param processId ID của tiến trình cần thiết lập.
      */
-    public void setProcessId(int processId) {
+    public void setProcessId(double processId) {
         this.processId = processId;
     }
 
