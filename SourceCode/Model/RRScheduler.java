@@ -95,7 +95,7 @@ public class RRScheduler extends Scheduler {
             double timeSlice = Math.min(quantum, process.getRemainingTime());
 
             // Thêm tiến trình vào Gantt Chart.
-            ganttChart.add(new GanttEntry(process.getProcessId(), currentTime, currentTime + timeSlice));
+            ganttChart.add(new GanttEntry(process.getProcessId(), currentTime, currentTime + timeSlice, timeSlice));
             currentTime += timeSlice;  // Cập nhật thời gian hiện tại.
             process.setRemainingTime(process.getRemainingTime() - timeSlice);  // Giảm thời gian còn lại.
 

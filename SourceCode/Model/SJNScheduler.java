@@ -103,7 +103,9 @@ public class SJNScheduler extends Scheduler {
                 shortest.setTurnaroundTime(turnaroundTime);
 
                 // Thêm tiến trình vào Gantt Chart.
-                ganttChart.add(new GanttEntry(shortest.getProcessId(), start, finish));
+                GanttEntry entry = new GanttEntry(shortest.getProcessId(), start, finish, turnaroundTime);
+                entry.calculateWaitingTime(shortest.getArrivalTime());
+                ganttChart.add(entry);
 
                 // Xóa tiến trình đã thực thi khỏi danh sách.
                 processesCopy.remove(shortest);

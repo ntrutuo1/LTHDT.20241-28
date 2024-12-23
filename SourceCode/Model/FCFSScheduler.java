@@ -36,7 +36,7 @@ public class FCFSScheduler extends Scheduler {
                 now = process.getArrivalTime();
             }
             // Thêm một mục Gantt Entry cho tiến trình: gồm ProcessId, StartTime và EndTime.
-            gantt.add(new GanttEntry(process.getProcessId(), now, now + process.getBurstTime()));
+            gantt.add(new GanttEntry(process.getProcessId(), now, now + process.getBurstTime(), now));
             // Cập nhật thời gian hiện tại sau khi tiến trình hoàn thành.
             now += process.getBurstTime();
         }
