@@ -112,6 +112,7 @@ public class GanttEntry {
         this.waitingTime = startTime - arrivalTime;
     }
 
+
     @Override
     public String toString() {
         return "GanttEntry{" +
