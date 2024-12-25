@@ -5,12 +5,12 @@ package Model;
  * Lưu trữ thông tin về tiến trình như thời gian đến, thời gian burst, ưu tiên và các chỉ số khác.
  */
 public class Process {
-    private double arrivalTime;       // Thời gian tiến trình đến hệ thống.
-    private int processId;            // ID của tiến trình.
-    private double burstTime;         // Thời gian CPU cần để hoàn thành tiến trình.
-    private int priority;          // Mức độ ưu tiên của tiến trình (nếu có).
-    private double waitingTime;       // Thời gian tiến trình chờ trước khi được xử lý.
-    private double turnaroundTime;    // Tổng thời gian từ khi tiến trình đến đến khi hoàn thành.
+    private double arrivalTime = 0;       // Thời gian tiến trình đến hệ thống.
+    private int processId ;            // ID của tiến trình.
+    private double burstTime = 0;         // Thời gian CPU cần để hoàn thành tiến trình.
+    private int priority = 0;          // Mức độ ưu tiên của tiến trình (nếu có).
+    private double waitingTime = 0;       // Thời gian tiến trình chờ trước khi được xử lý.
+    private double turnaroundTime = 0;    // Tổng thời gian từ khi tiến trình đến đến khi hoàn thành.
     private double remainingTime;     // Thời gian còn lại của tiến trình (dùng cho RR).
 
     /**

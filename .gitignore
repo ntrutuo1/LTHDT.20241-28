@@ -9,11 +9,5 @@
 
 # IDE project files
 /.settings/
-/.classpath
-/.project
-
-# Maven/Gradle build directories
-/target/
-/build/
-
-
+.classpath
+.project

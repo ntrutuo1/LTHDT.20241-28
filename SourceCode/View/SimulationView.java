@@ -190,8 +190,7 @@ public void updateGanttChart(List<GanttEntry> ganttEntries) {
         else {
             ganttLabel = new Label( // Tạo nhãn hiển thị thông tin tiến trình
                 "P" + entry.getProcessId() + "\n" +       // Hiển thị ID của tiến trình (ví dụ: P1, P2)
-                "AT: " + entry.getStartTime() + "\n" +    // Hiển thị thời gian đến (AT - Arrival Time)
-                "WT: " + entry.getWaitingTime() + "\n" +  // Hiển thị thời gian chờ (WT - Waiting Time)
+                "ST: " + entry.getStartTime() + "\n" +    // Hiển thị thời gian đến (AT - Arrival Time)
                 "ET: " + entry.getEndTime()              // Hiển thị thời gian kết thúc (ET - End Time)
             );
             // Thiết lập kiểu hiển thị nhãn cho tiến trình (màu nền xanh nhạt)

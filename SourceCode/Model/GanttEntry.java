@@ -28,7 +28,7 @@ public class GanttEntry {
         this.processId = processId;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.waitingTime = waitingTime;
+        this.waitingTime = waitingTime;    
     }
 
     /**
