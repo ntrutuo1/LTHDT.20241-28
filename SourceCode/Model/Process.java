@@ -12,6 +12,7 @@ public class Process {
     private double waitingTime = 0;       // Thời gian tiến trình chờ trước khi được xử lý.
     private double turnaroundTime = 0;    // Tổng thời gian từ khi tiến trình đến đến khi hoàn thành.
     private double remainingTime;     // Thời gian còn lại của tiến trình (dùng cho RR).
+    private boolean finished; 
 
     /**
      * Constructor khởi tạo Process với các giá trị cơ bản.
@@ -27,6 +28,7 @@ public class Process {
         this.burstTime = burstTime;
         this.priority = priority;
         this.remainingTime = burstTime; // Thời gian còn lại ban đầu bằng thời gian burst.
+         this.finished = false;
     }
 
     /**
@@ -153,5 +155,13 @@ public class Process {
      */
     public void setRemainingTime(double remainingTime) {
         this.remainingTime = remainingTime;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 }

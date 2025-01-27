@@ -53,22 +53,32 @@ public class SchedulerController {
     /**
      * Hiển thị hộp thoại để thêm một tiến trình mới.
      */
+    /**
+     * Kiểm tra đầu vào và bật/tắt nút Add.
+     */
+    private void validateInputs(TextField idField, TextField arrivalField, TextField burstField, Node addButton) {
+        boolean disable = !isValidDouble(idField.getText()) ||
+                          !isValidDouble(arrivalField.getText()) ||
+                          !isValidDouble(burstField.getText());
+        addButton.setDisable(disable);
+    }
+
     private void addProcessDialog() {
         // Tạo hộp thoại
         Dialog<Process> dialog = new Dialog<>();
         dialog.setTitle("Add Process");
         dialog.setHeaderText("Enter Process Details");
-
+    
         // Thêm các nút "Add" và "Cancel"
         ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
-
+    
         // Tạo giao diện nhập liệu
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
-
+    
         // Các trường nhập liệu cho Process ID, Arrival Time, Burst Time và Priority
         TextField idField = new TextField();
         idField.setPromptText("Process ID");
@@ -78,26 +88,27 @@ public class SchedulerController {
         burstField.setPromptText("Burst Time");
         TextField priorityField = new TextField();
         priorityField.setPromptText("Priority (optional)");
-
-        // Thêm các trường vào lưới giao diện
+    
+        // Thêm các trường vào grid
         grid.add(new Label("Process ID:"), 0, 0);
         grid.add(idField, 1, 0);
         grid.add(new Label("Arrival Time:"), 0, 1);
         grid.add(arrivalField, 1, 1);
         grid.add(new Label("Burst Time:"), 0, 2);
         grid.add(burstField, 1, 2);
-        
+    
+        // Nếu đang ở thuật toán SJN, hiển thị field Priority
         if (algorithm.equals("SJN")) {
             grid.add(new Label("Priority:"), 0, 3);
             grid.add(priorityField, 1, 3);
         }
-
+    
         dialog.getDialogPane().setContent(grid);
-
+    
         // Vô hiệu hóa nút Add khi dữ liệu chưa hợp lệ
         Node addButton = dialog.getDialogPane().lookupButton(addButtonType);
         addButton.setDisable(true);
-
+    
         // Thêm bộ lắng nghe để kiểm tra dữ liệu đầu vào
         idField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateInputs(idField, arrivalField, burstField, addButton);
@@ -108,37 +119,54 @@ public class SchedulerController {
         burstField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateInputs(idField, arrivalField, burstField, addButton);
         });
-
+    
         // Xử lý kết quả khi nhấn "Add"
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
-                int id = Integer.parseInt(idField.getText());
-                double arrival = Integer.parseInt(arrivalField.getText());
-                double burst = Integer.parseInt(burstField.getText());
-                int priority = 0;
-                if (algorithm.equals("SJN") && !priorityField.getText().isEmpty()) {
-                    priority = Integer.parseInt(priorityField.getText());
+                try {
+                    int id = Integer.parseInt(idField.getText());
+    
+                    // Kiểm tra trùng Process ID
+                    for (Process existingProcess : simulationView.getProcessData()) {
+                        if (existingProcess.getProcessId() == id) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Duplicate ID");
+                            alert.setHeaderText("Process ID " + id + " already exists.");
+                            alert.showAndWait();
+                            // Nếu trùng ID thì không tạo Process mới
+                            return null;
+                        }
+                    }
+    
+                    // Cho phép nhập số thực cho arrival và burst
+                    double arrival = Double.parseDouble(arrivalField.getText());
+                    double burst = Double.parseDouble(burstField.getText());
+    
+                    int priority = 0;
+                    if (algorithm.equals("SJN") && !priorityField.getText().isEmpty()) {
+                        priority = Integer.parseInt(priorityField.getText());
+                    }
+    
+                    return new Process(id, arrival, burst, priority);
+    
+                } catch (NumberFormatException ex) {
+                    // Nếu parse thất bại vì dữ liệu không hợp lệ
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Invalid Input");
+                    alert.setHeaderText("Please enter valid numbers.");
+                    alert.showAndWait();
+                    return null;
                 }
-                return new Process(id, arrival, burst, priority);
             }
             return null;
         });
-
-        // Thêm tiến trình mới vào danh sách
+    
+        // Sau khi show, nếu người dùng nhấn Add thì process (nếu khác null) sẽ được thêm
         dialog.showAndWait().ifPresent(process -> {
             simulationView.getProcessData().add(process);
         });
     }
-
-    /**
-     * Kiểm tra đầu vào và bật/tắt nút Add.
-     */
-    private void validateInputs(TextField idField, TextField arrivalField, TextField burstField, Node addButton) {
-        boolean disable = !isValidDouble(idField.getText()) ||
-                          !isValidDouble(arrivalField.getText()) ||
-                          !isValidDouble(burstField.getText());
-        addButton.setDisable(disable);
-    }
+    
 
     /**
      * Xác định một chuỗi có phải là số hợp lệ hay không.

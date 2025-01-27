@@ -2,6 +2,7 @@ package View;
 
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -63,10 +64,7 @@ public class SimulationView {
         TableColumn<Process, Number> burstCol = new TableColumn<>("Burst Time");
         burstCol.setCellValueFactory(new PropertyValueFactory<>("burstTime"));
 
-        TableColumn<Process, Number> priorityCol = new TableColumn<>("Priority");
-        priorityCol.setCellValueFactory(new PropertyValueFactory<>("priority"));
-
-        processTable.getColumns().addAll(idCol, arrivalCol, burstCol, priorityCol); // Thêm cột vào bảng.
+        processTable.getColumns().addAll(idCol, arrivalCol, burstCol); // Thêm cột vào bảng.
         processTable.setItems(processData);               // Gán dữ liệu cho bảng.
         processTable.setPrefWidth(400);                  // Đặt chiều rộng cho bảng.
 
@@ -85,8 +83,8 @@ public class SimulationView {
 
         // ======= Phần Biểu Đồ Gantt (Center) =======
         ganttChartPane = new FlowPane();            // Tạo FlowPane để biểu diễn Gantt Chart.
-        ganttChartPane.setHgap(5);                  // Khoảng cách ngang giữa các thành phần.
-        ganttChartPane.setVgap(5);                  // Khoảng cách dọc giữa các thành phần.
+        ganttChartPane.setHgap(0);                  // Khoảng cách ngang giữa các thành phần.
+        ganttChartPane.setVgap(0);                  // Khoảng cách dọc giữa các thành phần.
         ganttChartPane.setPadding(new Insets(10));  // Khoảng cách xung quanh FlowPane.
         ganttChartPane.setStyle("-fx-border-color: black; -fx-background-color: white;");
         ganttChartPane.setPrefWidth(400);           // Đặt chiều rộng cho biểu đồ.
@@ -169,42 +167,49 @@ public class SimulationView {
  * @param ganttEntries Danh sách GanttEntry chứa thông tin về các khoảng thời gian thực thi tiến trình.
  */
 public void updateGanttChart(List<GanttEntry> ganttEntries) {
-    // Xóa toàn bộ nội dung cũ trên biểu đồ Gantt
+    // 1) Xóa mọi ô cũ
     ganttChartPane.getChildren().clear();
 
-    // Lặp qua danh sách GanttEntry để cập nhật thông tin cho từng mục
-    for (GanttEntry entry : ganttEntries) {
-        Label ganttLabel; // Nhãn dùng để hiển thị thông tin của mỗi mục trong biểu đồ
+    // 2) Chạy vòng lặp trên 1 Thread phụ
+    new Thread(() -> {
+        for (GanttEntry entry : ganttEntries) {
+            try {
+                // Mỗi ô dừng 500ms (tuỳ bạn sửa)
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-        // Trường hợp: Thời gian rỗi (Idle)
-        if (entry.getProcessId() == -1) { // Nếu processId là -1, nghĩa là không có tiến trình nào thực thi
-            ganttLabel = new Label( // Tạo nhãn hiển thị thông tin thời gian rỗi
-                "Idle\n" +                              // Hiển thị chữ "Idle" để biểu thị khoảng thời gian rỗi
-                "Start: " + entry.getStartTime() + "\n" + // Thời gian bắt đầu của khoảng rỗi
-                "End: " + entry.getEndTime()             // Thời gian kết thúc của khoảng rỗi
-            );
-            // Thiết lập kiểu hiển thị nhãn cho thời gian rỗi (màu nền xám nhạt)
-            ganttLabel.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightgray;");
-        } 
-        // Trường hợp: Tiến trình đang thực thi (Active Process)
-        else {
-            ganttLabel = new Label( // Tạo nhãn hiển thị thông tin tiến trình
-                "P" + entry.getProcessId() + "\n" +       // Hiển thị ID của tiến trình (ví dụ: P1, P2)
-                "ST: " + entry.getStartTime() + "\n" +    // Hiển thị thời gian đến (AT - Arrival Time)
-                "ET: " + entry.getEndTime()              // Hiển thị thời gian kết thúc (ET - End Time)
-            );
-            // Thiết lập kiểu hiển thị nhãn cho tiến trình (màu nền xanh nhạt)
-            ganttLabel.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightblue;");
+            // 3) Gọi runLater để thêm ô vào UI (JavaFX thread)
+            Platform.runLater(() -> {
+                // Tạo Label cho ô
+                Label ganttLabel;
+                if (entry.getProcessId() == -1) {
+                    ganttLabel = new Label(
+                        "Idle\n" +
+                        "ST: " + String.format("%.2f", entry.getStartTime()) + "\n" +
+                        "ET: " + String.format("%.2f", entry.getEndTime())
+                    );
+                    ganttLabel.setStyle("-fx-border-color: black; -fx-padding: 0px; -fx-background-color: lightgray;");
+                } else {
+                    ganttLabel = new Label(
+                        "P" + entry.getProcessId() + "\n" +
+                        "ST: " + String.format("%.2f", entry.getStartTime()) + "\n" +
+                        "ET: " + String.format("%.2f", entry.getEndTime())
+                    );
+                    ganttLabel.setStyle("-fx-border-color: black; -fx-padding: 5px; -fx-background-color: lightblue;");
+                }
+
+                ganttLabel.setMinWidth(100);
+                ganttLabel.setAlignment(Pos.CENTER);
+
+                // Thêm ô vào FlowPane
+                ganttChartPane.getChildren().add(ganttLabel);
+            });
         }
-
-        // Điều chỉnh kích thước nhãn để đảm bảo hiển thị rõ ràng
-        ganttLabel.setMinWidth(100); // Đặt chiều rộng tối thiểu cho nhãn là 100 pixel
-        ganttLabel.setAlignment(Pos.CENTER); // Căn giữa nội dung hiển thị trong nhãn
-
-        // Thêm nhãn vào FlowPane của biểu đồ Gantt
-        ganttChartPane.getChildren().add(ganttLabel);
-    }
+    }).start(); // Bắt đầu Thread
 }
+
 
 
     /**
@@ -220,4 +225,4 @@ public void updateGanttChart(List<GanttEntry> ganttEntries) {
             avgWait, avgTurn, cpuUtil
         ));
     }
-}
+}   
