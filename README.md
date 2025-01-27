@@ -9,4 +9,4 @@ Thành viên nhóm
 
 Link Demo: https://drive.google.com/drive/folders/1CkXCnoE9UFzNfr0LZr9YWXlV0m05GfZo?usp=sharing
 
-Scheduing Algorithms Simulation
+Scheduling Algorithms Simulation
